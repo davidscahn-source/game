@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>코스모 아케이드 · Cosmo Arcade</title>
-<meta name="description" content="탭 한 번으로 즐기는 무료 미니게임 모음 — 궤도 점프, 별 블록, 행성 머지, 별빛 정렬">
+<meta name="description" content="탭 한 번으로 즐기는 무료 미니게임 모음 — 링 러시, 별 블록, 행성 머지, 별빛 정렬, 궤도 점프">
 <meta name="theme-color" content="#0b0b1e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -17,7 +17,8 @@ main{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;padding:ca
   background:linear-gradient(#0a0a22,#1a1040)}
 h1{font-size:40px;margin:0;letter-spacing:-1px;background:linear-gradient(120deg,#7df9ff,#b48cff 55%,#ff8ad1);
   -webkit-background-clip:text;background-clip:text;color:transparent}
-.tag{margin:6px 0 22px;opacity:.75;font-size:15px}
+.tag{margin:6px 0 14px;opacity:.75;font-size:15px}
+.streak{display:inline-block;margin:0 0 16px;padding:7px 14px;border-radius:999px;background:rgba(255,178,62,.16);color:#ffcf7a;font-size:14px;font-weight:700}
 .card{display:flex;align-items:center;gap:16px;padding:16px;margin-bottom:12px;border-radius:20px;text-decoration:none;color:#fff;
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13)}
 .card:active{transform:scale(.98)}
@@ -34,7 +35,13 @@ footer a{color:#fff;opacity:.45}
 <main>
   <h1 data-ko="코스모 아케이드" data-en="Cosmo Arcade"></h1>
   <p class="tag" data-ko="짧게, 한 판만 더! 무료 미니게임 모음" data-en="Quick free mini-games. Just one more round!"></p>
+  <p class="streak" id="streak" hidden></p>
 
+  <a class="card" href="rush/index.html">
+    <div class="ico" style="background:linear-gradient(135deg,#ff4f7b,#7a2cff)">⚡</div>
+    <div><b data-ko="링 러시" data-en="Ring Rush"></b><span data-ko="고난도! 궤도를 바꿔 피하는 반사신경 게임" data-en="Hard mode: switch rings, dodge fast"></span><em data-best="cosmo.rush"></em></div>
+    <div class="go">›</div>
+  </a>
   <a class="card" href="blocks/index.html">
     <div class="ico" style="background:linear-gradient(135deg,#ffb23e,#ff6f61)">🧩</div>
     <div><b data-ko="별 블록" data-en="Star Blocks"></b><span data-ko="조각을 놓아 줄을 지우는 퍼즐" data-en="Place pieces, clear lines"></span><em data-best="cosmo.blocks"></em></div>
@@ -68,6 +75,16 @@ footer a{color:#fff;opacity:.45}
     var b = read(el.getAttribute('data-best')).best;
     if (b) el.textContent = (ko ? '최고 ' : 'Best ') + b;
   });
+  // 연속 접속 일수 (끊겨도 불이익 없이 1일부터 다시 시작)
+  try {
+    var c = read('cosmo.common'), d = new Date(), t = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    d.setDate(d.getDate() - 1);
+    var y = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    if (c.day !== t) { c.streak = c.day === y ? (c.streak || 0) + 1 : 1; c.day = t; localStorage.setItem('cosmo.common', JSON.stringify(c)); }
+    var el = document.getElementById('streak');
+    el.textContent = '🔥 ' + (ko ? c.streak + '일 연속 접속 · 오늘의 도전이 새로 열렸어요' : 'Day ' + c.streak + ' streak · new daily challenges are open');
+    el.hidden = false;
+  } catch (e) {}
   document.querySelectorAll('[data-level]').forEach(function (el) {
     var l = read(el.getAttribute('data-level')).level;
     if (l > 1) el.textContent = (ko ? '레벨 ' : 'Level ') + l;

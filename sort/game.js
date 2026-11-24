@@ -5,7 +5,7 @@ const CAP = 4, TW = 50, SLOT = 42, BR = 19, TH = CAP * SLOT + 14;
 const HUES = [0, 205, 120, 48, 280, 25, 320, 170, 95, 235];
 const FREE_UNDO = 3;
 
-let tubes, sel = -1, history, undos, extraUsed, level, pos = [], pop = null, shake = null;
+let tubes, hid, mystery, sel = -1, history, undos, extraUsed, level, pos = [], pop = null, shake = null;
 
 const k = Kit.create({
   id: 'sort',
@@ -81,9 +81,12 @@ function newLevel() {
   level = k.save.level;
   const colors = Math.min(3 + Math.floor((level - 1) / 2), HUES.length - 1);
   tubes = deal(colors);
+  // 미스터리 레벨: 맨 위 구슬만 보이고 아래는 꺼내야 드러난다
+  mystery = level >= 5 && level % 3 === 2;
+  hid = tubes.map((t) => t.map((c, j) => mystery && j < t.length - 1));
   sel = -1; history = []; undos = FREE_UNDO; extraUsed = false;
   layout();
-  k.hud(lvText());
+  k.hud(lvText(), mystery ? (Kit.KO ? '❓ 미스터리 레벨' : '❓ Mystery level') : '');
   k.toolbar([
     { id: 'undo', label: '', fn: undo },
     { id: 'tube', label: ['▶ 병 추가', '▶ Add tube'], ad: true, fn: addTube },
@@ -119,8 +122,9 @@ function tapTube(i) {
   }
   if (i === sel) { sel = -1; return; }
   if (canMove(tubes, sel, i)) {
-    history.push(tubes.map((t) => t.slice()));
-    tubes[i].push(tubes[sel].pop());
+    history.push([tubes.map((t) => t.slice()), hid.map((t) => t.slice())]);
+    tubes[i].push(tubes[sel].pop()); hid[sel].pop(); hid[i].push(false);
+    if (hid[sel].length) hid[sel][hid[sel].length - 1] = false;
     pop = { i, t: 0 }; sel = -1;
     const full = tubes[i].length === CAP && done(tubes[i]);
     k.beep(full ? 760 : 420, full ? 0.22 : 0.07, 'sine', 0.11, full ? 1300 : 0);
@@ -135,14 +139,14 @@ function tapTube(i) {
 function undo() {
   if (!history.length) return;
   if (undos <= 0) return k.rewarded('undo', () => { undos += 5; tools(); });
-  tubes = history.pop(); undos -= 1; sel = -1; layout(); tools();
+  [tubes, hid] = history.pop(); undos -= 1; sel = -1; layout(); tools();
 }
 function addTube() {
   if (extraUsed) return;
-  k.rewarded('tube', () => { extraUsed = true; tubes.push([]); history = []; layout(); tools(); });
+  k.rewarded('tube', () => { extraUsed = true; tubes.push([]); hid.push([]); history = []; layout(); tools(); });
 }
 function restart() {
-  if (history.length) { tubes = history[0]; history = []; sel = -1; if (extraUsed && tubes.length < pos.length) tubes.push([]); layout(); }
+  if (history.length) { [tubes, hid] = history[0]; history = []; sel = -1; if (extraUsed && tubes.length < pos.length) { tubes.push([]); hid.push([]); } layout(); }
 }
 function win() {
   k.state = 'over';
@@ -182,11 +186,14 @@ function draw(ctx) {
       const top = j === t.length - 1;
       if (top && sel === i) by = p.y - 26;
       if (top && pop && pop.i === i) r = BR * (1 + 0.25 * Math.sin(pop.t * 3.14));
-      ball(ctx, x, by, c, r);
+      if (hid[i][j]) {
+        ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.beginPath(); ctx.arc(x, by, r, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '800 18px system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('?', x, by + 6);
+      } else ball(ctx, x, by, c, r);
     });
   });
 }
 
-window.__dbg = () => ({ state: k.state, level, tubes, tap: tapTube, CAP });
+window.__dbg = () => ({ state: k.state, level, tubes, hid, mystery, tap: tapTube, CAP });
 k.menu();
 })();

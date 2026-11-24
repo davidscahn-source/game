@@ -19,16 +19,19 @@ const norm = (c) => {
 const rot = (c) => norm(c.map((p) => [-p[1], p[0]]));
 function makePiece(bi) {
   let cells = parse(BASES[bi][0]);
-  for (let i = Math.floor(Math.random() * 4); i > 0; i--) cells = rot(cells);
+  for (let i = Math.floor(k.rand() * 4); i > 0; i--) cells = rot(cells);
   return {
     cells, hue: (bi * 53 + 190) % 360,
     w: Math.max(...cells.map((p) => p[0])) + 1, h: Math.max(...cells.map((p) => p[1])) + 1
   };
 }
+// 점수가 오를수록 큰 조각이 자주, 작은 조각이 드물게 나온다
+const BIG = [4, 6, 8, 9, 10], SMALL = [0, 1];
 function randomPiece() {
-  const total = BASES.reduce((a, b) => a + b[1], 0);
-  let r = Math.random() * total;
-  for (let i = 0; i < BASES.length; i++) { r -= BASES[i][1]; if (r <= 0) return makePiece(i); }
+  const d = Math.min(1, score / 600);
+  const wt = BASES.map((b, i) => b[1] * (BIG.includes(i) ? 1 + 1.4 * d : SMALL.includes(i) ? 1 - 0.6 * d : 1));
+  let r = k.rand() * wt.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < BASES.length; i++) { r -= wt[i]; if (r <= 0) return makePiece(i); }
   return makePiece(0);
 }
 
@@ -36,6 +39,8 @@ let grid, tray, drag = null, fx = [], floats = [], score = 0, streak = 0, cs, gx
 
 const k = Kit.create({
   id: 'blocks',
+  daily: true,
+  tiers: [100, 300, 700, 1500, 3000],
   title: ['별 블록', 'Star Blocks'],
   tagline: ['조각을 놓아 줄을 지우세요', 'Place pieces, clear lines'],
   hint: ['한 번에 여러 줄 · 연속으로 지우면 보너스!', 'Multi-line and streak clears score bonus!'],
@@ -48,7 +53,7 @@ const k = Kit.create({
     grid = Array.from({ length: N }, () => Array(N).fill(0));
     score = 0; streak = 0; fx = []; floats = []; drag = null;
     refill();
-    k.hud(0);
+    k.setScore(0);
   },
   down(x, y) {
     if (k.state !== 'play') return;
@@ -118,7 +123,7 @@ function place(i, cx, cy) {
     streak = 0;
     k.beep(330, 0.07, 'triangle', 0.08);
   }
-  k.hud(score);
+  k.setScore(score);
   if (tray.every((t) => !t)) refill();
   if (!tray.some((t) => t && fitsAnywhere(t))) {
     k.beep(200, 0.4, 'sawtooth', 0.12, 60);

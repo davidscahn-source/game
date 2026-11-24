@@ -31,6 +31,7 @@ const STR = {
   quick: ['콤보', 'COMBO'],
   privacy: ['개인정보처리방침', 'Privacy Policy'],
   more: ['🎮 다른 게임', '🎮 More games'],
+  near: ['😱 최고 기록까지 단 {n}점!', '😱 Just {n} from your best!'],
   shareText: ['궤도 점프에서 {n}점! 이길 수 있어?', 'I scored {n} in Orbit Leap! Can you beat it?']
 };
 const T = (k, v) => {
@@ -476,7 +477,9 @@ function showOver() {
   if (isBest) save.best = score;
   save.games += 1;
   persist();
-  $('newBest').hidden = !isBest || score === 0;
+  const gap = save.best - score, near = !isBest && save.best > 5 && gap <= Math.max(2, save.best * 0.12);
+  $('newBest').textContent = near ? T('near', { n: gap + 1 }) : T('newbest');
+  $('newBest').hidden = !(near || (isBest && score > 0));
   $('overScore').textContent = score;
   $('overBest').textContent = save.best;
   $('overCoins').textContent = runCoins;

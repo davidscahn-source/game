@@ -4,6 +4,7 @@
   const cfg = (window.GAME_CONFIG && window.GAME_CONFIG.ads) || { provider: 'mock' };
   const hooks = { onStart() {}, onEnd() {} };
   let scriptState = 'idle'; // idle | loading | ready | failed
+  let lastAdAt = 0;
 
   function loadAdsense() {
     if (scriptState !== 'idle') return;
@@ -126,6 +127,7 @@
       else if (cfg.provider === 'adsense') loadAdsense();
     },
     async rewarded(name) {
+      lastAdAt = Date.now();
       if (isNative) return admobShow('reward');
       if (cfg.provider === 'none') return true;
       if (cfg.provider === 'adsense') return adsenseBreak({ type: 'reward', name }, true);
@@ -135,6 +137,12 @@
       return ok;
     },
     async interstitial(name) {
+      // 이탈 방지 규칙: 처음 몇 번은 건너뛰고, 직전 광고와 최소 간격을 둔다
+      let seen = 0;
+      try { seen = parseInt(localStorage.getItem('cosmo.adOpps'), 10) || 0; localStorage.setItem('cosmo.adOpps', seen + 1); } catch (e) {}
+      if (seen < (cfg.interstitialGrace == null ? 2 : cfg.interstitialGrace)) return;
+      if (Date.now() - lastAdAt < (cfg.interstitialMinSeconds == null ? 45 : cfg.interstitialMinSeconds) * 1000) return;
+      lastAdAt = Date.now();
       if (isNative) { await admobShow('inter'); return; }
       if (cfg.provider === 'none') return;
       if (cfg.provider === 'adsense') { await adsenseBreak({ type: 'next', name }, false); return; }

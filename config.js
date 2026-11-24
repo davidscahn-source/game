@@ -8,6 +8,8 @@ window.GAME_CONFIG = {
     adsenseClient: 'ca-pub-0000000000000000', // 본인 AdSense 게시자 ID
     testMode: true,          // 실서비스 전에 false 로 변경
     interstitialEvery: 3,    // N판마다 전면 광고 1회
+    interstitialGrace: 2,    // 새 이용자는 처음 N번의 전면 광고를 건너뜀 (첫인상·재방문율 보호)
+    interstitialMinSeconds: 45, // 광고와 광고 사이 최소 간격(초)
 
     // 안드로이드 앱(Capacitor)에서는 위 provider 와 무관하게 AdMob 이 자동으로 쓰입니다.
     // 아래는 구글 공식 테스트 광고 ID — 출시 전에 본인 AdMob 광고 단위 ID 로 교체하세요.

@@ -8,7 +8,7 @@
 - [ ] **1. 웹 게임 공개하기**
   저장소 [Settings → Pages](https://github.com/davidscahn-source/game/settings/pages) →
   Source: **Deploy from a branch** → Branch: **`ccr-4673a09d-6kywne`**, 폴더 **`/ (root)`** → **Save**
-  → 2~3분 뒤 https://davidscahn-source.github.io/game/ 접속 확인 (게임 4종 목록이 나옵니다)
+  → 2~3분 뒤 https://davidscahn-source.github.io/game/ 접속 확인 (게임 5종 목록이 나옵니다)
 - [ ] **2. 개인정보처리방침 빈칸 2개 채우기**
   `privacy.html` 에서 `[개발자 이름]`, `[연락처 이메일]` (영문 부분 `[Developer name]`, `[contact email]` 포함)
   → 공개되는 주소이니 공개용 이메일을 쓰세요. Claude 에게 "이름은 ○○, 이메일은 ○○ 로 넣어줘" 라고 해도 됩니다.
@@ -42,7 +42,7 @@
 
 - [ ] **8. 앱 만들기 + 등록정보 입력** — Play Console → 앱 만들기 (이름: 코스모 아케이드, 게임, 무료)
   - 앱 아이콘: `store/icon-512.png` / 그래픽 이미지: `store/feature-1024x500.png`
-  - 스크린샷: 휴대폰에서 게임 화면 2장 이상 캡처 (게임 4종을 한 장씩 찍으면 좋습니다)
+  - 스크린샷: 휴대폰에서 게임 화면 2장 이상 캡처 (게임별로 한 장씩 찍으면 좋습니다)
   - 개인정보처리방침 URL: `https://davidscahn-source.github.io/game/privacy.html`
   - 광고 포함: **예** / 콘텐츠 등급 설문: 폭력·도박 등 모두 "아니요"
   - 데이터 보안: "기기 또는 기타 ID" 수집·공유 **예**, 목적 **광고**

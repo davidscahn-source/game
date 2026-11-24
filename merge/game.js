@@ -7,11 +7,17 @@ const HUE = [195, 150, 95, 50, 25, 350, 315, 280, 245, 215, 175];
 const SPAWN = [0, 0, 0, 1, 1, 1, 2, 2, 3, 4];
 const G = 2200, LINE = 168, DROP_Y = 112, WALL = 14;
 
-let balls, cur, next, aimX, cool, score, danger, parts = [], floor;
-const pick = () => SPAWN[Math.floor(Math.random() * SPAWN.length)];
+let balls, cur, next, aimX, cool, score = 0, danger, parts = [], floor;
+// 점수가 오를수록 큰 행성이 섞여 나와 자리가 빨리 찬다
+const pick = () => {
+  const pool = score > 1500 ? SPAWN.concat([2, 3, 3, 4, 4, 5]) : score > 500 ? SPAWN.concat([2, 3, 4]) : SPAWN;
+  return pool[Math.floor(k.rand() * pool.length)];
+};
 
 const k = Kit.create({
   id: 'merge',
+  daily: true,
+  tiers: [300, 800, 1500, 2500, 4000],
   title: ['행성 머지', 'Planet Merge'],
   tagline: ['같은 행성을 합쳐 더 크게!', 'Merge matching planets!'],
   hint: ['좌우로 끌어 위치를 잡고 손을 떼면 떨어집니다', 'Drag to aim, release to drop'],
@@ -19,7 +25,7 @@ const k = Kit.create({
   start() {
     balls = []; parts = []; score = 0; danger = 0; cool = 0;
     cur = pick(); next = pick(); aimX = k.W / 2;
-    k.hud(0);
+    k.setScore(0);
   },
   down(x) { if (k.state === 'play') aim(x); },
   move(x) { if (k.state === 'play') aim(x); },
@@ -106,7 +112,7 @@ function merge(a, b) {
     balls.push({ x, y, px: x, py: y, t, r: R[t], age: 2 });
     score += PTS[t];
   }
-  k.hud(score);
+  k.setScore(score);
   k.beep(380 + t * 55, 0.16, 'sine', 0.12, 620 + t * 70);
   k.buzz(10);
 }
