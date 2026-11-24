@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>궤도 점프 · Orbit Leap</title>
+<meta name="description" content="탭 한 번으로 행성 사이를 뛰어넘는 원터치 아케이드 게임">
+<meta name="theme-color" content="#0b0b1e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="cv"></canvas>
+
+  <div id="hud">
+    <button id="btnSound" class="chip" aria-label="sound">🔊</button>
+    <div id="coins" class="chip">⭐ <span id="coinNum">0</span></div>
+  </div>
+
+  <section id="menu" class="screen">
+    <h1 data-t="title"></h1>
+    <p class="tag" data-t="tagline"></p>
+    <p class="best"><span data-t="best"></span> <b id="menuBest">0</b></p>
+    <button id="btnStart" class="btn primary big" data-t="start"></button>
+    <button id="btnShop" class="btn" data-t="shop"></button>
+    <a id="btnSupport" class="btn ghost" target="_blank" rel="noopener" hidden data-t="support"></a>
+    <p class="hint" data-t="hint"></p>
+  </section>
+
+  <section id="over" class="screen" hidden>
+    <p id="newBest" class="newbest" hidden data-t="newbest"></p>
+    <div class="scorebox">
+      <div class="lbl" data-t="score"></div>
+      <div id="overScore" class="num">0</div>
+      <div class="sub"><span data-t="best"></span> <b id="overBest">0</b> · ⭐ +<b id="overCoins">0</b></div>
+    </div>
+    <button id="btnRevive" class="btn ad" data-t="revive"></button>
+    <button id="btnDouble" class="btn ad" data-t="dbl"></button>
+    <button id="btnRetry" class="btn primary big" data-t="retry"></button>
+    <div class="row">
+      <button id="btnShare" class="btn small" data-t="share"></button>
+      <button id="btnShop2" class="btn small" data-t="shop"></button>
+      <button id="btnHome" class="btn small" data-t="home"></button>
+    </div>
+  </section>
+
+  <section id="shop" class="screen solid" hidden>
+    <h2 data-t="shop"></h2>
+    <div id="shopGrid"></div>
+    <button id="btnShopClose" class="btn" data-t="close"></button>
+  </section>
+
+  <section id="daily" class="screen solid" hidden>
+    <h2 data-t="daily"></h2>
+    <p id="dailyStreak" class="tag"></p>
+    <div class="reward">⭐ +<span id="dailyAmt">0</span></div>
+    <button id="btnClaim" class="btn primary big" data-t="claim"></button>
+  </section>
+
+  <div id="toast" hidden></div>
+  <div id="adMock" hidden>
+    <div id="adMockText"></div>
+    <div id="adMockCount">3</div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script src="ads.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

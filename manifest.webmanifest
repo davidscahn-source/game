@@ -1,0 +1,10 @@
+{
+  "name": "궤도 점프 · Orbit Leap",
+  "short_name": "궤도 점프",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0b1e",
+  "theme_color": "#0b0b1e",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
