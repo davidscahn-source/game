@@ -19,9 +19,10 @@ python3 -m http.server 8000   # 그 다음 http://localhost:8000
 
 ## 배포 (GitHub Pages)
 
-1. 이 브랜치를 `main` 에 병합
-2. 저장소 **Settings → Pages → Source: Deploy from a branch → main / (root)**
-3. `https://<사용자명>.github.io/game/` 에서 플레이
+1. 저장소 **Settings → Pages → Source: Deploy from a branch → `ccr-4673a09d-6kywne` / (root)** → Save
+2. 몇 분 뒤 `https://davidscahn-source.github.io/game/` 에서 플레이
+
+> 직접 해야 하는 일만 모은 목록은 [TODO.md](TODO.md) 에 있습니다.
 
 ## 수익화
 
