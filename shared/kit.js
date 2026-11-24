@@ -1,7 +1,9 @@
 // 코스모 아케이드 공용 틀: 화면(메뉴/게임오버), 저장, 소리, 광고 흐름, 캔버스 루프
 window.Kit = (() => {
   'use strict';
-  const KO = (navigator.language || 'ko').toLowerCase().startsWith('ko');
+  // 언어: 허브에서 고른 값(또는 ?lang=en) 우선, 없으면 기기 언어
+  const LANG = (() => { try { return new URLSearchParams(location.search).get('lang') || localStorage.getItem('cosmo.lang'); } catch (e) { return null; } })();
+  const KO = LANG ? LANG === 'ko' : (navigator.language || 'ko').toLowerCase().startsWith('ko');
   const L = (p) => (Array.isArray(p) ? p[KO ? 0 : 1] : p);
   const STR = {
     start: ['시작하기', 'Play'], retry: ['다시 하기', 'Retry'],

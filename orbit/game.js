@@ -2,7 +2,8 @@
 'use strict';
 
 // ───────── i18n ─────────
-const KO = (navigator.language || 'ko').toLowerCase().startsWith('ko');
+const LANG = (() => { try { return new URLSearchParams(location.search).get('lang') || localStorage.getItem('cosmo.lang'); } catch (e) { return null; } })();
+const KO = LANG ? LANG === 'ko' : (navigator.language || 'ko').toLowerCase().startsWith('ko');
 const STR = {
   title: ['궤도 점프', 'Orbit Leap'],
   tagline: ['탭해서 다음 행성으로!', 'Tap to leap to the next planet!'],

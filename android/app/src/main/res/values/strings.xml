@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">코스모 아케이드</string>
-    <string name="title_activity_main">코스모 아케이드</string>
+    <string name="app_name">Cosmo Arcade</string>
+    <string name="title_activity_main">Cosmo Arcade</string>
     <string name="package_name">io.github.davidscahnsource.cosmoarcade</string>
     <string name="custom_url_scheme">io.github.davidscahnsource.cosmoarcade</string>
     <!-- 구글 공식 테스트용 AdMob 앱 ID. 출시 전에 본인 앱 ID(ca-app-pub-XXXX~YYYY)로 교체 -->

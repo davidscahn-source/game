@@ -28,7 +28,9 @@ h1{font-size:40px;margin:0;letter-spacing:-1px;background:linear-gradient(120deg
 .card em{font-style:normal;font-size:12.5px;color:#ffe066;margin-top:5px;display:block;min-height:15px}
 .go{margin-left:auto;font-size:22px;opacity:.5}
 footer{text-align:center;margin-top:22px;font-size:12px}
+footer{color:rgba(255,255,255,.45)}
 footer a{color:#fff;opacity:.45}
+footer button{background:none;border:0;color:#7df9ff;font:inherit;text-decoration:underline;cursor:pointer;padding:6px}
 </style>
 </head>
 <body>
@@ -63,11 +65,17 @@ footer a{color:#fff;opacity:.45}
     <div class="go">›</div>
   </a>
 
-  <footer><a href="privacy.html" data-ko="개인정보처리방침" data-en="Privacy Policy"></a></footer>
+  <footer><button id="lang"></button> · <a href="privacy.html" data-ko="개인정보처리방침" data-en="Privacy Policy"></a></footer>
 </main>
 <script>
 (function () {
-  var ko = (navigator.language || 'ko').toLowerCase().indexOf('ko') === 0;
+  var pref = null;
+  try { pref = new URLSearchParams(location.search).get('lang') || localStorage.getItem('cosmo.lang'); } catch (e) {}
+  if (pref) { try { localStorage.setItem('cosmo.lang', pref === 'ko' ? 'ko' : 'en'); } catch (e) {} }
+  var ko = pref ? pref === 'ko' : (navigator.language || 'ko').toLowerCase().indexOf('ko') === 0;
+  var lg = document.getElementById('lang');
+  lg.textContent = ko ? 'English' : '한국어';
+  lg.onclick = function () { try { localStorage.setItem('cosmo.lang', ko ? 'en' : 'ko'); } catch (e) {} location.href = location.pathname; };
   document.documentElement.lang = ko ? 'ko' : 'en';
   document.querySelectorAll('[data-ko]').forEach(function (el) { el.textContent = el.getAttribute(ko ? 'data-ko' : 'data-en'); });
   function read(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
