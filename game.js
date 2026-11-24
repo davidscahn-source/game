@@ -29,6 +29,7 @@ const STR = {
   support: ['☕ 개발자 후원하기', '☕ Support the dev'],
   hint: ['탭 = 발사 · 빠르게 연속으로 뛰면 콤보!', 'Tap = launch · hop quickly for combos!'],
   quick: ['콤보', 'COMBO'],
+  privacy: ['개인정보처리방침', 'Privacy Policy'],
   shareText: ['궤도 점프에서 {n}점! 이길 수 있어?', 'I scored {n} in Orbit Leap! Can you beat it?']
 };
 const T = (k, v) => {
@@ -595,7 +596,7 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('pagehide', persist);
 document.addEventListener('visibilitychange', () => { if (document.hidden) persist(); last = performance.now(); });
 
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+if (!Ads.isNative && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 

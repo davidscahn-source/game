@@ -1,6 +1,6 @@
 // 네트워크 우선, 실패 시 캐시 (오프라인 플레이 지원)
-const CACHE = 'orbit-leap-v1';
-const FILES = ['./', 'index.html', 'style.css', 'config.js', 'ads.js', 'game.js', 'icon.svg', 'manifest.webmanifest'];
+const CACHE = 'orbit-leap-v2';
+const FILES = ['./', 'index.html', 'style.css', 'config.js', 'ads.js', 'game.js', 'icon.svg', 'manifest.webmanifest', 'privacy.html'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', (e) => {

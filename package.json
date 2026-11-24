@@ -1,0 +1,22 @@
+{
+  "name": "orbit-leap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "궤도 점프 · Orbit Leap — Android 앱 포장용 (Capacitor)",
+  "scripts": {
+    "build:web": "node scripts/build-web.js",
+    "sync": "npm run build:web && cap sync android",
+    "open": "cap open android",
+    "apk": "npm run sync && cd android && ./gradlew assembleDebug",
+    "aab": "npm run sync && cd android && ./gradlew bundleRelease"
+  },
+  "dependencies": {
+    "@capacitor-community/admob": "^8.4.2",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.2"
+  }
+}

@@ -59,10 +59,74 @@
     });
   }
 
+  // ── AdMob (안드로이드 앱) ──
+  const cap = window.Capacitor;
+  const isNative = !!(cap && cap.isNativePlatform && cap.isNativePlatform());
+  // 번들러 없이 네이티브 브리지를 직접 호출하는 얇은 래퍼 (@capacitor-community/admob 플러그인)
+  const call = (method, opts) => cap.nativePromise('AdMob', method, opts || {});
+  const AdMob = !isNative ? null : {
+    initialize: (o) => call('initialize', o),
+    requestConsentInfo: (o) => call('requestConsentInfo', o),
+    showConsentForm: () => call('showConsentForm'),
+    prepareRewardVideoAd: (o) => call('prepareRewardVideoAd', o),
+    showRewardVideoAd: () => call('showRewardVideoAd'),
+    prepareInterstitial: (o) => call('prepareInterstitial', o),
+    showInterstitial: () => call('showInterstitial'),
+    addListener: (ev, cb) => cap.addListener('AdMob', ev, cb)
+  };
+  const am = cfg.admob || {};
+  const ready = { reward: false, inter: false };
+  let waiter = null; // 현재 표시 중인 광고의 결과 콜백
+
+  function admobLoad(kind) {
+    if (!AdMob) return Promise.resolve(false);
+    const call = kind === 'reward'
+      ? AdMob.prepareRewardVideoAd({ adId: am.rewardedId, isTesting: !!am.testMode })
+      : AdMob.prepareInterstitial({ adId: am.interstitialId, isTesting: !!am.testMode });
+    return call.then(() => { ready[kind] = true; return true; }, () => { ready[kind] = false; return false; });
+  }
+
+  async function admobInit() {
+    try {
+      await AdMob.initialize({ initializeForTesting: !!am.testMode });
+      // 유럽 등 동의가 필요한 지역에서는 구글 동의 창을 띄운다
+      try {
+        const info = await AdMob.requestConsentInfo();
+        if (info.isConsentFormAvailable && info.status === 'REQUIRED') await AdMob.showConsentForm();
+      } catch (e) {}
+      const end = (ok) => { hooks.onEnd(); const w = waiter; waiter = null; if (w) w(ok); };
+      let rewarded = false;
+      AdMob.addListener('onRewardedVideoAdReward', () => { rewarded = true; });
+      AdMob.addListener('onRewardedVideoAdDismissed', () => { const r = rewarded; rewarded = false; end(r); admobLoad('reward'); });
+      AdMob.addListener('onRewardedVideoAdFailedToShow', () => { rewarded = false; end(false); admobLoad('reward'); });
+      AdMob.addListener('interstitialAdDismissed', () => { end(true); admobLoad('inter'); });
+      AdMob.addListener('interstitialAdFailedToShow', () => { end(false); admobLoad('inter'); });
+      admobLoad('reward');
+      admobLoad('inter');
+    } catch (e) {}
+  }
+
+  async function admobShow(kind) {
+    if (!AdMob) return false;
+    if (!ready[kind] && !(await admobLoad(kind))) return false;
+    ready[kind] = false;
+    return new Promise((resolve) => {
+      waiter = resolve;
+      hooks.onStart();
+      const call = kind === 'reward' ? AdMob.showRewardVideoAd() : AdMob.showInterstitial();
+      Promise.resolve(call).catch(() => { if (waiter === resolve) { waiter = null; hooks.onEnd(); resolve(false); } });
+    });
+  }
+
   window.Ads = {
+    isNative,
     hooks,
-    init() { if (cfg.provider === 'adsense') loadAdsense(); },
+    init() {
+      if (isNative) admobInit();
+      else if (cfg.provider === 'adsense') loadAdsense();
+    },
     async rewarded(name) {
+      if (isNative) return admobShow('reward');
       if (cfg.provider === 'none') return true;
       if (cfg.provider === 'adsense') return adsenseBreak({ type: 'reward', name }, true);
       hooks.onStart();
@@ -71,6 +135,7 @@
       return ok;
     },
     async interstitial(name) {
+      if (isNative) { await admobShow('inter'); return; }
       if (cfg.provider === 'none') return;
       if (cfg.provider === 'adsense') { await adsenseBreak({ type: 'next', name }, false); return; }
       hooks.onStart();

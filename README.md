@@ -53,9 +53,56 @@ python3 -m http.server 8000   # 그 다음 http://localhost:8000
 `Ads.rewarded()` / `Ads.interstitial()` 두 함수만 교체하면 됩니다.
 
 - 게임 포털(CrazyGames, Poki 등) 입점: 각 포털 SDK 로 교체 — 트래픽을 직접 모으지 않아도 됨
-- 앱 스토어 출시: Capacitor 로 감싼 뒤 AdMob 플러그인으로 교체
+- 앱 스토어 출시: 아래 "안드로이드 앱" 참고 (AdMob 연동 완료)
 
 > 참고: 광고 제거 같은 유료 결제는 서버 검증이 필요해 포함하지 않았습니다. 지금은 후원 링크만 지원합니다.
+
+## 안드로이드 앱 (구글 플레이)
+
+웹 게임을 [Capacitor](https://capacitorjs.com) 로 감싼 안드로이드 프로젝트가 `android/` 에 있습니다.
+앱 안에서는 광고가 자동으로 **AdMob** 으로 바뀝니다 (`ads.js`).
+
+### 앱 파일 받기 — 컴퓨터에 아무것도 설치하지 않는 방법
+
+푸시할 때마다 GitHub Actions 가 앱을 빌드합니다.
+
+1. 저장소 **Actions → Android build → 최근 실행** 클릭
+2. 아래 **Artifacts** 에서 `orbit-leap-debug-apk` 다운로드 → 압축을 풀어 `app-debug.apk` 를 휴대폰에 설치 (테스트용)
+
+### 내 컴퓨터에서 빌드 (선택)
+
+Node 22+, JDK 21, Android Studio 필요.
+
+```bash
+npm install
+npm run apk     # android/app/build/outputs/apk/debug/app-debug.apk
+npm run open    # Android Studio 로 열기
+```
+
+웹 파일(`index.html`, `game.js` 등)을 고친 뒤에는 `npm run sync` 로 앱에 반영합니다.
+
+### 출시 전 체크리스트
+
+1. **AdMob ID 교체** — [AdMob](https://admob.google.com) 에서 앱과 광고 단위(보상형 1개, 전면 1개)를 만든 뒤
+   - `android/app/src/main/res/values/strings.xml` 의 `admob_app_id` → 본인 앱 ID (`ca-app-pub-…~…`)
+   - `config.js` 의 `admob.rewardedId`, `admob.interstitialId` → 본인 광고 단위 ID, `testMode: false`
+   - 지금 들어 있는 값은 구글 공식 **테스트 ID** 라서 수익이 발생하지 않습니다. 반대로 개발 중에 실제 ID 로 본인 광고를 누르면 계정이 정지될 수 있으니 테스트는 꼭 테스트 ID 로 하세요.
+2. **개인정보처리방침** — `privacy.html` 의 `[개발자 이름]`, `[연락처 이메일]` 을 채우고,
+   GitHub Pages 주소(`https://<사용자명>.github.io/game/privacy.html`)를 Play Console 에 입력
+3. **패키지 이름** — 현재 `io.github.davidscahnsource.orbitleap`. 스토어에 한 번 올리면 바꿀 수 없으니,
+   바꾸려면 업로드 전에 `capacitor.config.json` 과 `android/app/build.gradle`, `strings.xml`, `MainActivity.java` 경로를 함께 수정
+4. **서명 키 만들기** (한 번만, 분실하면 안 됨 — 안전한 곳에 백업)
+   ```bash
+   keytool -genkey -v -keystore release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias orbitleap
+   base64 -w0 release.jks   # 출력된 긴 문자열을 복사
+   ```
+   저장소 **Settings → Secrets and variables → Actions** 에 4개 등록:
+   `KEYSTORE_BASE64`(위 문자열), `KEYSTORE_PASSWORD`, `KEY_ALIAS`(`orbitleap`), `KEY_PASSWORD`
+   → 다음 빌드부터 Artifacts 에 `orbit-leap-release-aab` 가 생깁니다. 이 `.aab` 파일을 Play Console 에 업로드합니다.
+   **키스토어 파일과 비밀번호는 절대 저장소에 커밋하지 마세요.**
+5. **업데이트할 때** — `android/app/build.gradle` 의 `versionCode` 를 1씩 올려야 업로드됩니다.
+6. **스토어 등록 이미지** — `store/icon-512.png`(앱 아이콘), `store/feature-1024x500.png`(그래픽 이미지). 스크린샷은 휴대폰에서 직접 캡처(최소 2장).
+7. Play Console 의 **데이터 보안** 설문에서는 "광고 ID / 기기 ID 수집 — 광고 목적, 제3자(Google) 공유" 로 답하고, **광고 포함: 예** 로 표시
 
 ## 파일 구조
 
@@ -66,3 +113,7 @@ python3 -m http.server 8000   # 그 다음 http://localhost:8000
 | `ads.js` | 광고 어댑터 (mock / adsense / none) |
 | `config.js` | 수익화 설정 |
 | `sw.js`, `manifest.webmanifest`, `icon.svg` | PWA (오프라인·홈 화면 설치) |
+| `privacy.html` | 개인정보처리방침 (한국어/영어) |
+| `android/`, `capacitor.config.json`, `package.json` | 안드로이드 앱 프로젝트 |
+| `assets/`, `store/` | 앱 아이콘 원본, 스토어 등록용 이미지 |
+| `.github/workflows/android.yml` | APK/AAB 자동 빌드 |

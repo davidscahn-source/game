@@ -1,0 +1,7 @@
+{
+  "appId": "io.github.davidscahnsource.orbitleap",
+  "appName": "궤도 점프",
+  "webDir": "www",
+  "backgroundColor": "#0b0b1e",
+  "android": { "allowMixedContent": false }
+}
