@@ -1,6 +1,6 @@
 {
-  "name": "궤도 점프 · Orbit Leap",
-  "short_name": "궤도 점프",
+  "name": "코스모 아케이드 · Cosmo Arcade",
+  "short_name": "코스모 아케이드",
   "start_url": ".",
   "display": "standalone",
   "orientation": "portrait",

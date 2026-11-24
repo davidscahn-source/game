@@ -1,15 +1,30 @@
-# 궤도 점프 · Orbit Leap
+# 코스모 아케이드 · Cosmo Arcade
 
-탭 한 번으로 행성 사이를 뛰어넘는 원터치 아케이드 웹 게임입니다.
-의존성·빌드 없이 정적 파일만으로 동작합니다 (모바일/PC, PWA 설치 지원, 한국어/영어 자동 전환).
+짧게 즐기는 미니게임 4종 모음입니다. 의존성·빌드 없이 정적 파일만으로 동작하고
+(모바일/PC, PWA 설치, 한국어/영어 자동 전환), 같은 코드를 안드로이드 앱으로도 포장합니다.
 
-## 플레이 방법
+| 게임 | 폴더 | 장르 | 벤치마킹한 시장 흐름 |
+|---|---|---|---|
+| 🧩 별 블록 (Star Blocks) | `blocks/` | 8×8 블록 퍼즐 | 광고 수익 1위 장르. 퍼즐이 모바일 게임 광고 수익의 절반 이상 |
+| 🪐 행성 머지 (Planet Merge) | `merge/` | 물리 머지 | 가장 빠르게 성장하는 하위 장르, 이용자당 광고 수익이 높음 |
+| 🧪 별빛 정렬 (Star Sort) | `sort/` | 색 정렬 레벨 퍼즐 | 2026년 급상승 중인 정렬(sort) 퍼즐 |
+| 🚀 궤도 점프 (Orbit Leap) | `orbit/` | 원터치 아케이드 | 하이퍼캐주얼 |
 
-- 공이 행성 주위를 돕니다. **탭(또는 스페이스)** 하면 접선 방향으로 발사됩니다.
-- 다음 행성의 점선 궤도 안에 들어가면 착지 → 점수.
-- 착지 후 0.9초 안에 다시 뛰면 **콤보** (추가 점수 + 코인).
-- 아래에서 붉은 공허가 올라옵니다. 머뭇거리면 끝!
-- 좌우 벽은 튕깁니다. 여러 행성을 건너뛰면 그만큼 점수를 더 받습니다.
+장르와 수익 구조만 참고했고, 게임 이름·그래픽·규칙 세부는 모두 자체 제작입니다.
+루트 `index.html` 이 게임 목록(허브)이고, 각 게임 메뉴에 "다른 게임" 버튼이 있어 서로 이용자를 넘겨줍니다.
+
+## 게임별 규칙과 광고 지점
+
+- **별 블록** — 아래 조각 3개를 판에 끌어다 놓고, 가로·세로 줄을 채우면 지워집니다. 여러 줄 동시·연속 지우기에 보너스.
+  놓을 곳이 없으면 끝. *보상형 광고: 가장 찬 줄 3개를 지우고 이어하기*
+- **행성 머지** — 좌우로 위치를 잡고 손을 떼면 행성이 떨어집니다. 같은 숫자끼리 닿으면 한 단계 큰 행성으로 합쳐집니다.
+  점선 위로 2초 넘게 쌓이면 끝. *보상형 광고: 작은 행성을 모두 치우고 이어하기*
+- **별빛 정렬** — 병을 눌러 맨 위 구슬을 들고 다른 병에 옮겨, 색마다 한 병에 모으면 클리어. 레벨이 오를수록 색이 늘어납니다
+  (모든 레벨은 풀 수 있는 배치인지 검사 후 출제). *보상형 광고: 되돌리기 +5, 빈 병 추가*
+- **궤도 점프** — 탭하면 접선 방향으로 발사, 다음 행성 궤도에 착지. 빠르게 연속으로 뛰면 콤보.
+  *보상형 광고: 이어하기, 코인 2배* · 스킨 상점, 출석 보상
+
+모든 게임 공통: `interstitialEvery` 판(레벨)마다 전면 광고 1회. 보상형 광고를 본 판은 전면 광고를 생략합니다.
 
 ## 로컬 실행
 
@@ -28,14 +43,7 @@ python3 -m http.server 8000   # 그 다음 http://localhost:8000
 
 모든 설정은 `config.js` 한 파일에 있습니다.
 
-| 수익 지점 | 위치 | 설명 |
-|---|---|---|
-| 보상형 광고 | 게임오버 → "광고 보고 이어하기" | 한 판에 1회 부활 |
-| 보상형 광고 | 게임오버 → "광고 보고 코인 2배" | 그 판에서 번 코인 2배 |
-| 전면 광고 | "다시 하기" | `interstitialEvery` 판마다 1회 (보상형을 본 판은 생략) |
-| 후원 링크 | 메뉴 | `supportUrl` 을 채우면 버튼 표시 |
-
-재방문 장치: 최고 기록, 출석 보상(연속 출석 시 증가), 코인으로 사는 스킨 8종, 점수 공유.
+광고 지점은 위 "게임별 규칙과 광고 지점" 참고. `supportUrl` 을 채우면 궤도 점프 메뉴에 후원 버튼이 표시됩니다.
 
 ### 실제 광고 켜기 (Google AdSense H5 게임 광고)
 
@@ -60,7 +68,8 @@ python3 -m http.server 8000   # 그 다음 http://localhost:8000
 
 ## 안드로이드 앱 (구글 플레이)
 
-웹 게임을 [Capacitor](https://capacitorjs.com) 로 감싼 안드로이드 프로젝트가 `android/` 에 있습니다.
+게임 4종을 한 앱(코스모 아케이드)으로 묶어 [Capacitor](https://capacitorjs.com) 로 감싼 안드로이드 프로젝트가 `android/` 에 있습니다.
+앱 하나만 등록하면 되므로 스토어 심사·테스트·AdMob 설정을 한 번만 하면 됩니다. 반응이 좋은 게임은 나중에 단독 앱으로 분리할 수 있습니다.
 앱 안에서는 광고가 자동으로 **AdMob** 으로 바뀝니다 (`ads.js`).
 
 ### 앱 파일 받기 — 컴퓨터에 아무것도 설치하지 않는 방법
@@ -68,7 +77,7 @@ python3 -m http.server 8000   # 그 다음 http://localhost:8000
 푸시할 때마다 GitHub Actions 가 앱을 빌드합니다.
 
 1. 저장소 **Actions → Android build → 최근 실행** 클릭
-2. 아래 **Artifacts** 에서 `orbit-leap-debug-apk` 다운로드 → 압축을 풀어 `app-debug.apk` 를 휴대폰에 설치 (테스트용)
+2. 아래 **Artifacts** 에서 `cosmo-arcade-debug-apk` 다운로드 → 압축을 풀어 `app-debug.apk` 를 휴대폰에 설치 (테스트용)
 
 ### 내 컴퓨터에서 빌드 (선택)
 
@@ -80,7 +89,7 @@ npm run apk     # android/app/build/outputs/apk/debug/app-debug.apk
 npm run open    # Android Studio 로 열기
 ```
 
-웹 파일(`index.html`, `game.js` 등)을 고친 뒤에는 `npm run sync` 로 앱에 반영합니다.
+웹 파일을 고친 뒤에는 `npm run sync` 로 앱에 반영합니다.
 
 ### 출시 전 체크리스트
 
@@ -90,8 +99,8 @@ npm run open    # Android Studio 로 열기
    - 지금 들어 있는 값은 구글 공식 **테스트 ID** 라서 수익이 발생하지 않습니다. 반대로 개발 중에 실제 ID 로 본인 광고를 누르면 계정이 정지될 수 있으니 테스트는 꼭 테스트 ID 로 하세요.
 2. **개인정보처리방침** — `privacy.html` 의 `[개발자 이름]`, `[연락처 이메일]` 을 채우고,
    GitHub Pages 주소(`https://<사용자명>.github.io/game/privacy.html`)를 Play Console 에 입력
-3. **패키지 이름** — 현재 `io.github.davidscahnsource.orbitleap`. 스토어에 한 번 올리면 바꿀 수 없으니,
-   바꾸려면 업로드 전에 `capacitor.config.json` 과 `android/app/build.gradle`, `strings.xml`, `MainActivity.java` 경로를 함께 수정
+3. **패키지 이름** — 현재 `io.github.davidscahnsource.cosmoarcade`. 스토어에 한 번 올리면 바꿀 수 없으니,
+   바꾸려면 업로드 전에 `capacitor.config.json`, `android/app/build.gradle` 의 `applicationId`, `strings.xml` 을 함께 수정
 4. **서명 키 만들기** (한 번만, 분실하면 안 됨 — 안전한 곳에 백업)
    ```bash
    keytool -genkey -v -keystore release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias orbitleap
@@ -99,7 +108,7 @@ npm run open    # Android Studio 로 열기
    ```
    저장소 **Settings → Secrets and variables → Actions** 에 4개 등록:
    `KEYSTORE_BASE64`(위 문자열), `KEYSTORE_PASSWORD`, `KEY_ALIAS`(`orbitleap`), `KEY_PASSWORD`
-   → 다음 빌드부터 Artifacts 에 `orbit-leap-release-aab` 가 생깁니다. 이 `.aab` 파일을 Play Console 에 업로드합니다.
+   → 다음 빌드부터 Artifacts 에 `cosmo-arcade-release-aab` 가 생깁니다. 이 `.aab` 파일을 Play Console 에 업로드합니다.
    **키스토어 파일과 비밀번호는 절대 저장소에 커밋하지 마세요.**
 5. **업데이트할 때** — `android/app/build.gradle` 의 `versionCode` 를 1씩 올려야 업로드됩니다.
 6. **스토어 등록 이미지** — `store/icon-512.png`(앱 아이콘), `store/feature-1024x500.png`(그래픽 이미지). 스크린샷은 휴대폰에서 직접 캡처(최소 2장).
@@ -107,14 +116,18 @@ npm run open    # Android Studio 로 열기
 
 ## 파일 구조
 
-| 파일 | 역할 |
+| 경로 | 역할 |
 |---|---|
-| `index.html`, `style.css` | 화면/UI |
-| `game.js` | 게임 로직, 상점, 출석 보상 |
-| `ads.js` | 광고 어댑터 (mock / adsense / none) |
-| `config.js` | 수익화 설정 |
-| `sw.js`, `manifest.webmanifest`, `icon.svg` | PWA (오프라인·홈 화면 설치) |
+| `index.html` | 게임 목록(허브) |
+| `orbit/`, `blocks/`, `merge/`, `sort/` | 게임별 화면과 로직 |
+| `shared/kit.js`, `shared/kit.css` | 새 게임 3종의 공용 틀 (메뉴·게임오버·저장·소리·광고 흐름) |
+| `ads.js` | 광고 어댑터 (웹: mock / adsense / none, 앱: AdMob 자동) |
+| `config.js` | 수익화 설정 — 모든 게임 공통 |
 | `privacy.html` | 개인정보처리방침 (한국어/영어) |
-| `android/`, `capacitor.config.json`, `package.json` | 안드로이드 앱 프로젝트 |
+| `sw.js`, `manifest.webmanifest`, `icon.svg` | PWA (오프라인·홈 화면 설치) |
+| `android/`, `capacitor.config.json`, `package.json`, `scripts/` | 안드로이드 앱 프로젝트 |
 | `assets/`, `store/` | 앱 아이콘 원본, 스토어 등록용 이미지 |
 | `.github/workflows/android.yml` | APK/AAB 자동 빌드 |
+| `TODO.md` | 저장소 주인이 직접 해야 하는 일 |
+
+새 게임을 추가하려면 폴더를 하나 만들어 `Kit.create({...})` 로 시작하고, `index.html`(허브)·`sw.js`·`scripts/build-web.js` 에 한 줄씩 추가하면 됩니다.

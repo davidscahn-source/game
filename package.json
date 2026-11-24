@@ -1,8 +1,8 @@
 {
-  "name": "orbit-leap",
+  "name": "cosmo-arcade",
   "version": "1.0.0",
   "private": true,
-  "description": "궤도 점프 · Orbit Leap — Android 앱 포장용 (Capacitor)",
+  "description": "코스모 아케이드 · Cosmo Arcade — 미니게임 모음 (웹 + Capacitor Android)",
   "scripts": {
     "build:web": "node scripts/build-web.js",
     "sync": "npm run build:web && cap sync android",

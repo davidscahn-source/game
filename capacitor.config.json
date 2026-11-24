@@ -1,6 +1,6 @@
 {
-  "appId": "io.github.davidscahnsource.orbitleap",
-  "appName": "궤도 점프",
+  "appId": "io.github.davidscahnsource.cosmoarcade",
+  "appName": "코스모 아케이드",
   "webDir": "www",
   "backgroundColor": "#0b0b1e",
   "android": { "allowMixedContent": false }
