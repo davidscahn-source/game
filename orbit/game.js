@@ -33,7 +33,8 @@ const STR = {
   privacy: ['개인정보처리방침', 'Privacy Policy'],
   more: ['🎮 다른 게임', '🎮 More games'],
   near: ['😱 최고 기록까지 단 {n}점!', '😱 Just {n} from your best!'],
-  shareText: ['궤도 점프에서 {n}점! 이길 수 있어?', 'I scored {n} in Orbit Leap! Can you beat it?']
+  shareText: ['궤도 점프에서 {n}점! 이길 수 있어?', 'I scored {n} in Orbit Leap! Can you beat it?'],
+  shareFailed: ['공유할 수 없어요', 'Unable to share']
 };
 const T = (k, v) => {
   let s = (STR[k] || [k, k])[KO ? 0 : 1];
@@ -527,10 +528,10 @@ $('btnDouble').onclick = async () => {
 };
 $('btnShare').onclick = async () => {
   const text = T('shareText', { n: score });
-  try {
-    if (navigator.share) await navigator.share({ text, url: location.href });
-    else { await navigator.clipboard.writeText(text + ' ' + location.href); toast(T('copied')); }
-  } catch (e) {}
+  const url = CosmoShare.gameUrl('orbit');
+  const result = await CosmoShare.send({ text, url, title: T('title') });
+  if (result === 'copied') toast(T('copied'));
+  else if (result === 'failed') toast(T('shareFailed'));
 };
 $('btnSound').onclick = () => {
   save.mute = !save.mute; persist();

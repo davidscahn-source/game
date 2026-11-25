@@ -65,8 +65,10 @@ footer button{background:none;border:0;color:#7df9ff;font:inherit;text-decoratio
     <div class="go">›</div>
   </a>
 
-  <footer><button id="lang"></button> · <a href="privacy.html" data-ko="개인정보처리방침" data-en="Privacy Policy"></a></footer>
+  <footer><button id="lang"></button> · <a href="privacy.html" data-ko="개인정보처리방침" data-en="Privacy Policy"></a><span id="privacyOptionsSep" hidden> · </span><button id="privacyOptions" data-ko="광고 개인정보 설정" data-en="Ad privacy settings" hidden></button><p id="privacyOptionsStatus" role="status" hidden></p></footer>
 </main>
+<script src="config.js"></script>
+<script src="ads.js"></script>
 <script>
 (function () {
   var pref = null;
@@ -98,6 +100,19 @@ footer button{background:none;border:0;color:#7df9ff;font:inherit;text-decoratio
     if (l > 1) el.textContent = (ko ? '레벨 ' : 'Level ') + l;
   });
   var native = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+  if (native) {
+    var privacyOptions = document.getElementById('privacyOptions');
+    var privacySep = document.getElementById('privacyOptionsSep');
+    var privacyStatus = document.getElementById('privacyOptionsStatus');
+    Ads.hooks.onPrivacyOptionsChanged = function (required) { privacyOptions.hidden = !required; privacySep.hidden = !required; };
+    privacyOptions.onclick = async function () {
+      privacyOptions.disabled = true; privacyStatus.hidden = true;
+      var ok = await Ads.showPrivacyOptions();
+      if (!ok) { privacyStatus.textContent = ko ? '설정을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.' : 'Unable to load settings. Please try again.'; privacyStatus.hidden = false; }
+      privacyOptions.disabled = false;
+    };
+    Ads.init();
+  }
   if (!native && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     navigator.serviceWorker.register('sw.js').catch(function () {});
   }

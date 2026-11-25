@@ -18,7 +18,7 @@ window.Kit = (() => {
     vsLose: ['⚔️ 친구 기록까지 {n}점 부족', '⚔️ {n} short of your friend'], vsPass: ['⚔️ 친구 기록 돌파!', '⚔️ Passed your friend!'],
     near: ['😱 최고 기록까지 단 {n}점!', '😱 Just {n} from your best!'], chase: ['🔥 최고 기록까지 {n}점!', '🔥 {n} to your best!'],
     passing: ['🎉 신기록 갱신 중!', '🎉 New record run!'], toNext: ['{t}까지 {n}점', '{n} to {t}'],
-    challenge: ['친구에게 도전장', 'Challenge a friend']
+    challenge: ['친구에게 도전장', 'Challenge a friend'], shareFailed: ['공유할 수 없어요', 'Unable to share']
   };
   const T = (k, v) => { let x = L(STR[k] || k); if (v) for (const i in v) x = x.replace('{' + i + '}', v[i]); return x; };
   window.T = T;
@@ -195,11 +195,10 @@ window.Kit = (() => {
       const d = new Date();
       const text = L(o.title) + (daily ? ' ' + T('dailyLbl') + ' ' + (d.getMonth() + 1) + '/' + d.getDate() : '') +
         ' — ' + score + (KO ? '점! 이길 수 있어?' : ' points! Can you beat it?');
-      const url = location.origin + location.pathname + '?vs=' + score + (daily ? '&daily=' + today() : '');
-      try {
-        if (navigator.share) await navigator.share({ text, url });
-        else { await navigator.clipboard.writeText(text + ' ' + url); k.toast(T('copied')); }
-      } catch (e) {}
+      const url = CosmoShare.gameUrl(o.id, { vs: score, ...(daily ? { daily: today() } : {}) });
+      const result = await CosmoShare.send({ text, url, title: L(o.title) });
+      if (result === 'copied') k.toast(T('copied'));
+      else if (result === 'failed') k.toast(T('shareFailed'));
     };
     // 게임오버: revive 함수를 주면 한 판에 한 번 "광고 보고 이어하기" 제공
     k.over = (score, revive) => {

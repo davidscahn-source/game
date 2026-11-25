@@ -20,6 +20,8 @@ window.GAME_CONFIG = {
       testMode: true         // 출시 빌드 전에 false 로 변경
     }
   },
-  // 후원/광고제거 결제 링크 (Ko-fi, 토스 아이디, Buy Me a Coffee 등). 비우면 버튼 숨김.
+  // 앱에서 공유한 링크는 기기의 localhost가 아니라 공개 웹 게임으로 연결한다.
+  publicGameUrl: 'https://davidscahn-source.github.io/game/',
+  // 후원 링크 (Ko-fi, 토스 아이디, Buy Me a Coffee 등). 비우면 버튼 숨김.
   supportUrl: ''
 };

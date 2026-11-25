@@ -5,7 +5,7 @@ const CAP = 4, TW = 50, SLOT = 42, BR = 19, TH = CAP * SLOT + 14;
 const HUES = [0, 205, 120, 48, 280, 25, 320, 170, 95, 235];
 const FREE_UNDO = 3;
 
-let tubes, hid, mystery, sel = -1, history, undos, extraUsed, level, pos = [], pop = null, shake = null;
+let tubes, hid, initialTubes, initialHid, mystery, sel = -1, history, undos, extraUsed, level, pos = [], pop = null, shake = null;
 
 const k = Kit.create({
   id: 'sort',
@@ -84,6 +84,8 @@ function newLevel() {
   // 미스터리 레벨: 맨 위 구슬만 보이고 아래는 꺼내야 드러난다
   mystery = level >= 5 && level % 3 === 2;
   hid = tubes.map((t) => t.map((c, j) => mystery && j < t.length - 1));
+  initialTubes = tubes.map((t) => t.slice());
+  initialHid = hid.map((t) => t.slice());
   sel = -1; history = []; undos = FREE_UNDO; extraUsed = false;
   layout();
   k.hud(lvText(), mystery ? (Kit.KO ? '❓ 미스터리 레벨' : '❓ Mystery level') : '');
@@ -146,7 +148,10 @@ function addTube() {
   k.rewarded('tube', () => { extraUsed = true; tubes.push([]); hid.push([]); history = []; layout(); tools(); });
 }
 function restart() {
-  if (history.length) { [tubes, hid] = history[0]; history = []; sel = -1; if (extraUsed && tubes.length < pos.length) { tubes.push([]); hid.push([]); } layout(); }
+  tubes = initialTubes.map((t) => t.slice());
+  hid = initialHid.map((t) => t.slice());
+  if (extraUsed) { tubes.push([]); hid.push([]); }
+  history = []; sel = -1; layout();
 }
 function win() {
   k.state = 'over';

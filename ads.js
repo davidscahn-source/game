@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const cfg = (window.GAME_CONFIG && window.GAME_CONFIG.ads) || { provider: 'mock' };
-  const hooks = { onStart() {}, onEnd() {} };
+  const hooks = { onStart() {}, onEnd() {}, onPrivacyOptionsChanged() {} };
   let scriptState = 'idle'; // idle | loading | ready | failed
   let lastAdAt = 0;
 
@@ -69,6 +69,7 @@
     initialize: (o) => call('initialize', o),
     requestConsentInfo: (o) => call('requestConsentInfo', o),
     showConsentForm: () => call('showConsentForm'),
+    showPrivacyOptionsForm: () => call('showPrivacyOptionsForm'),
     prepareRewardVideoAd: (o) => call('prepareRewardVideoAd', o),
     showRewardVideoAd: () => call('showRewardVideoAd'),
     prepareInterstitial: (o) => call('prepareInterstitial', o),
@@ -77,51 +78,132 @@
   };
   const am = cfg.admob || {};
   const ready = { reward: false, inter: false };
-  let waiter = null; // 현재 표시 중인 광고의 결과 콜백
+  const loading = { reward: null, inter: null };
+  let waiter = null, busy = false, initPromise = null;
+  let sdkInitialized = false, listenersReady = false, canRequestAds = false;
+  let privacyOptionsRequired = false, consentGeneration = 0;
+
+  // 네트워크나 SDK가 응답하지 않아도 게임에 영구적으로 갇히지 않는다.
+  function withTimeout(promise, ms) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Ad request timed out')), ms);
+      Promise.resolve(promise).then(
+        (value) => { clearTimeout(timer); resolve(value); },
+        (error) => { clearTimeout(timer); reject(error); }
+      );
+    });
+  }
+
+  function setConsent(info) {
+    canRequestAds = !!(info && info.canRequestAds);
+    privacyOptionsRequired = !!(info && info.privacyOptionsRequirementStatus === 'REQUIRED');
+    hooks.onPrivacyOptionsChanged(privacyOptionsRequired);
+  }
 
   function admobLoad(kind) {
-    if (!AdMob) return Promise.resolve(false);
-    const call = kind === 'reward'
-      ? AdMob.prepareRewardVideoAd({ adId: am.rewardedId, isTesting: !!am.testMode })
-      : AdMob.prepareInterstitial({ adId: am.interstitialId, isTesting: !!am.testMode });
-    return call.then(() => { ready[kind] = true; return true; }, () => { ready[kind] = false; return false; });
+    if (!AdMob || !canRequestAds || !sdkInitialized) return Promise.resolve(false);
+    if (ready[kind]) return Promise.resolve(true);
+    if (loading[kind]) return loading[kind];
+    const generation = consentGeneration;
+    loading[kind] = (async () => {
+      try {
+        const request = kind === 'reward'
+          ? AdMob.prepareRewardVideoAd({ adId: am.rewardedId, isTesting: !!am.testMode })
+          : AdMob.prepareInterstitial({ adId: am.interstitialId, isTesting: !!am.testMode });
+        await withTimeout(request, 15000);
+        ready[kind] = canRequestAds && generation === consentGeneration;
+      } catch (e) { ready[kind] = false; }
+      return ready[kind];
+    })().finally(() => { loading[kind] = null; });
+    return loading[kind];
+  }
+
+  function registerListeners() {
+    if (listenersReady) return;
+    const finish = (kind, ok) => {
+      if (waiter && waiter.kind === kind) waiter.finish(ok);
+      admobLoad(kind);
+    };
+    AdMob.addListener('onRewardedVideoAdReward', () => { if (waiter && waiter.kind === 'reward') waiter.rewarded = true; });
+    AdMob.addListener('onRewardedVideoAdDismissed', () => finish('reward', !!(waiter && waiter.kind === 'reward' && waiter.rewarded)));
+    AdMob.addListener('onRewardedVideoAdFailedToShow', () => finish('reward', false));
+    AdMob.addListener('interstitialAdDismissed', () => finish('inter', true));
+    AdMob.addListener('interstitialAdFailedToShow', () => finish('inter', false));
+    listenersReady = true;
   }
 
   async function admobInit() {
-    try {
-      await AdMob.initialize({ initializeForTesting: !!am.testMode });
-      // 유럽 등 동의가 필요한 지역에서는 구글 동의 창을 띄운다
+    if (!AdMob) return false;
+    if (initPromise) return initPromise;
+    initPromise = (async () => {
       try {
-        const info = await AdMob.requestConsentInfo();
-        if (info.isConsentFormAvailable && info.status === 'REQUIRED') await AdMob.showConsentForm();
-      } catch (e) {}
-      const end = (ok) => { hooks.onEnd(); const w = waiter; waiter = null; if (w) w(ok); };
-      let rewarded = false;
-      AdMob.addListener('onRewardedVideoAdReward', () => { rewarded = true; });
-      AdMob.addListener('onRewardedVideoAdDismissed', () => { const r = rewarded; rewarded = false; end(r); admobLoad('reward'); });
-      AdMob.addListener('onRewardedVideoAdFailedToShow', () => { rewarded = false; end(false); admobLoad('reward'); });
-      AdMob.addListener('interstitialAdDismissed', () => { end(true); admobLoad('inter'); });
-      AdMob.addListener('interstitialAdFailedToShow', () => { end(false); admobLoad('inter'); });
-      admobLoad('reward');
-      admobLoad('inter');
-    } catch (e) {}
+        // 동의 확인 전에는 SDK 초기화나 광고 요청을 하지 않는다.
+        let info = await withTimeout(AdMob.requestConsentInfo(), 15000);
+        if (info.isConsentFormAvailable && info.status === 'REQUIRED') info = await AdMob.showConsentForm();
+        setConsent(info);
+        if (!canRequestAds) return false;
+        if (!sdkInitialized) {
+          await withTimeout(AdMob.initialize({ initializeForTesting: !!am.testMode }), 15000);
+          sdkInitialized = true;
+        }
+        registerListeners();
+        admobLoad('reward');
+        admobLoad('inter');
+        return true;
+      } catch (e) { setConsent(null); return false; }
+    })();
+    const ok = await initPromise;
+    if (!ok) initPromise = null; // 다음 광고 요청에서 다시 시도할 수 있다.
+    return ok;
   }
 
   async function admobShow(kind) {
-    if (!AdMob) return false;
-    if (!ready[kind] && !(await admobLoad(kind))) return false;
-    ready[kind] = false;
-    return new Promise((resolve) => {
-      waiter = resolve;
-      hooks.onStart();
-      const call = kind === 'reward' ? AdMob.showRewardVideoAd() : AdMob.showInterstitial();
-      Promise.resolve(call).catch(() => { if (waiter === resolve) { waiter = null; hooks.onEnd(); resolve(false); } });
-    });
+    if (!AdMob || busy) return false;
+    busy = true;
+    try {
+      if (!(await admobInit()) || !canRequestAds || !(await admobLoad(kind))) return false;
+      ready[kind] = false;
+      return await new Promise((resolve) => {
+        let finished = false;
+        const finish = (ok) => {
+          if (finished) return;
+          finished = true; clearTimeout(timer); waiter = null; hooks.onEnd(); resolve(ok);
+        };
+        const timer = setTimeout(() => finish(false), 180000);
+        waiter = { kind, rewarded: false, finish };
+        hooks.onStart();
+        try {
+          const request = kind === 'reward' ? AdMob.showRewardVideoAd() : AdMob.showInterstitial();
+          Promise.resolve(request).catch(() => finish(false));
+        } catch (e) { finish(false); }
+      });
+    } finally { busy = false; }
+  }
+
+  async function showPrivacyOptions() {
+    if (!AdMob || busy) return false;
+    await admobInit();
+    if (!privacyOptionsRequired) return false;
+    busy = true;
+    try {
+      await AdMob.showPrivacyOptionsForm();
+      consentGeneration += 1; ready.reward = false; ready.inter = false;
+      const info = await withTimeout(AdMob.requestConsentInfo(), 15000);
+      setConsent(info);
+      initPromise = null;
+      return true;
+    } catch (e) {
+      consentGeneration += 1; ready.reward = false; ready.inter = false;
+      setConsent(null); initPromise = null;
+      return false;
+    } finally { busy = false; }
   }
 
   window.Ads = {
     isNative,
     hooks,
+    get privacyOptionsRequired() { return privacyOptionsRequired; },
+    showPrivacyOptions,
     init() {
       if (isNative) admobInit();
       else if (cfg.provider === 'adsense') loadAdsense();

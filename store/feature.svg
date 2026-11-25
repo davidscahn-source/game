@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0b0b1e"/><stop offset="1" stop-color="#21104a"/>
+    </linearGradient>
+    <linearGradient id="planet" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#a08fff"/><stop offset="1" stop-color="#6559e8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="500" fill="url(#bg)"/>
+  <g opacity=".55" fill="#d6d0ff">
+    <circle cx="66" cy="88" r="2"/><circle cx="147" cy="51" r="3"/>
+    <circle cx="353" cy="78" r="2"/><circle cx="61" cy="381" r="3"/>
+    <circle cx="358" cy="409" r="2"/><circle cx="969" cy="65" r="2"/>
+    <circle cx="925" cy="418" r="3"/><circle cx="736" cy="75" r="2"/>
+  </g>
+  <circle cx="218" cy="250" r="142" fill="none" stroke="#7df9ff" stroke-width="6" stroke-dasharray="3 20" stroke-linecap="round" opacity=".7"/>
+  <circle cx="218" cy="250" r="92" fill="url(#planet)"/>
+  <circle cx="187" cy="220" r="92" fill="#c2b8ff" opacity=".18"/>
+  <circle cx="318" cy="149" r="24" fill="#7df9ff"/>
+  <g font-family="Apple SD Gothic Neo, AppleGothic, Noto Sans KR, sans-serif">
+    <text x="430" y="155" fill="#7df9ff" font-size="21" font-weight="700" letter-spacing="3">COSMO ARCADE</text>
+    <text x="426" y="242" fill="#ffffff" font-size="59" font-weight="800" letter-spacing="-2">코스모 아케이드</text>
+    <text x="430" y="302" fill="#cfcaec" font-size="27" font-weight="500">짧게, 한 판만 더!</text>
+    <rect x="430" y="341" width="204" height="47" rx="23.5" fill="#7df9ff" fill-opacity=".15"/>
+    <text x="451" y="373" fill="#a9faff" font-size="21" font-weight="700">미니게임 5종</text>
+  </g>
+</svg>

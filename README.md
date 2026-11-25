@@ -23,7 +23,7 @@
 - **행성 머지** — 좌우로 위치를 잡고 손을 떼면 행성이 떨어집니다. 같은 숫자끼리 닿으면 한 단계 큰 행성으로 합쳐집니다.
   점선 위로 2초 넘게 쌓이면 끝. *보상형 광고: 작은 행성을 모두 치우고 이어하기*
 - **별빛 정렬** — 병을 눌러 맨 위 구슬을 들고 다른 병에 옮겨, 색마다 한 병에 모으면 클리어. 레벨이 오를수록 색이 늘어납니다
-  (모든 레벨은 풀 수 있는 배치인지 검사 후 출제). *보상형 광고: 되돌리기 +5, 빈 병 추가*
+  (배치의 풀이 가능성을 검사하며, 탐색 제한 안에서 찾지 못하면 대체 배치를 사용). *보상형 광고: 되돌리기 +5, 빈 병 추가*
 - **궤도 점프** — 탭하면 접선 방향으로 발사, 다음 행성 궤도에 착지. 빠르게 연속으로 뛰면 콤보.
   *보상형 광고: 이어하기, 코인 2배* · 스킨 상점, 출석 보상
 
@@ -55,6 +55,7 @@
 
 ```bash
 python3 -m http.server 8000   # 그 다음 http://localhost:8000
+npm test                      # 광고 동의·공유·퍼즐 회귀 테스트
 ```
 
 ## 배포 (GitHub Pages)
@@ -95,7 +96,7 @@ python3 -m http.server 8000   # 그 다음 http://localhost:8000
 
 게임 5종을 한 앱(코스모 아케이드)으로 묶어 [Capacitor](https://capacitorjs.com) 로 감싼 안드로이드 프로젝트가 `android/` 에 있습니다.
 앱 하나만 등록하면 되므로 스토어 심사·테스트·AdMob 설정을 한 번만 하면 됩니다. 반응이 좋은 게임은 나중에 단독 앱으로 분리할 수 있습니다.
-앱 안에서는 광고가 자동으로 **AdMob** 으로 바뀝니다 (`ads.js`).
+앱 안에서는 광고가 자동으로 **AdMob** 으로 바뀝니다 (`ads.js`). 동의 상태가 확인되기 전에는 광고를 요청하지 않으며, 필요한 지역에서는 허브에 광고 개인정보 설정 버튼을 표시합니다. 앱의 공유 기능은 공개 웹 게임 주소로 연결합니다.
 
 ### 앱 파일 받기 — 컴퓨터에 아무것도 설치하지 않는 방법
 
@@ -126,18 +127,10 @@ npm run open    # Android Studio 로 열기
    GitHub Pages 주소(`https://<사용자명>.github.io/game/privacy.html`)를 Play Console 에 입력
 3. **패키지 이름** — 현재 `io.github.davidscahnsource.cosmoarcade`. 스토어에 한 번 올리면 바꿀 수 없으니,
    바꾸려면 업로드 전에 `capacitor.config.json`, `android/app/build.gradle` 의 `applicationId`, `strings.xml` 을 함께 수정
-4. **서명 키 만들기** (한 번만, 분실하면 안 됨 — 안전한 곳에 백업)
-   ```bash
-   keytool -genkey -v -keystore release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias orbitleap
-   base64 -w0 release.jks   # 출력된 긴 문자열을 복사
-   ```
-   저장소 **Settings → Secrets and variables → Actions** 에 4개 등록:
-   `KEYSTORE_BASE64`(위 문자열), `KEYSTORE_PASSWORD`, `KEY_ALIAS`(`orbitleap`), `KEY_PASSWORD`
-   → 다음 빌드부터 Artifacts 에 `cosmo-arcade-release-aab` 가 생깁니다. 이 `.aab` 파일을 Play Console 에 업로드합니다.
-   **키스토어 파일과 비밀번호는 절대 저장소에 커밋하지 마세요.**
+4. **업로드 서명 키** — 이미 만든 이 앱의 업로드 키를 계속 사용하고, 키와 암호를 안전하게 백업합니다. 저장소 **Settings → Secrets and variables → Actions**에 `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`가 있으면 빌드에서 서명된 `cosmo-arcade-release-aab`를 생성합니다. 키나 암호는 저장소에 커밋하지 마세요.
 5. **업데이트할 때** — `android/app/build.gradle` 의 `versionCode` 를 1씩 올려야 업로드됩니다.
 6. **스토어 등록 이미지** — `store/icon-512.png`(앱 아이콘), `store/feature-1024x500.png`(그래픽 이미지). 스크린샷은 휴대폰에서 직접 캡처(최소 2장).
-7. Play Console 의 **데이터 보안** 설문에서는 "광고 ID / 기기 ID 수집 — 광고 목적, 제3자(Google) 공유" 로 답하고, **광고 포함: 예** 로 표시
+7. Play Console의 **데이터 보안** 설문은 [Google Mobile Ads SDK 데이터 안내](https://developers.google.com/admob/android/privacy/play-data-disclosure)와 실제 앱 설정을 바탕으로 작성하고, 광고 포함 여부를 표시합니다.
 
 ## 파일 구조
 
