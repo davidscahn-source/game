@@ -18,7 +18,7 @@ window.Kit = (() => {
     vsLose: ['⚔️ 친구 기록까지 {n}점 부족', '⚔️ {n} short of your friend'], vsPass: ['⚔️ 친구 기록 돌파!', '⚔️ Passed your friend!'],
     near: ['😱 최고 기록까지 단 {n}점!', '😱 Just {n} from your best!'], chase: ['🔥 최고 기록까지 {n}점!', '🔥 {n} to your best!'],
     passing: ['🎉 신기록 갱신 중!', '🎉 New record run!'], toNext: ['{t}까지 {n}점', '{n} to {t}'],
-    challenge: ['친구에게 도전장', 'Challenge a friend'], shareFailed: ['공유할 수 없어요', 'Unable to share']
+    challenge: ['친구에게 도전장', 'Challenge a friend'], adLoading: ['광고 불러오는 중…', 'Loading ad…'], shareFailed: ['공유할 수 없어요', 'Unable to share']
   };
   const T = (k, v) => { let x = L(STR[k] || k); if (v) for (const i in v) x = x.replace('{' + i + '}', v[i]); return x; };
   window.T = T;
@@ -119,6 +119,7 @@ window.Kit = (() => {
 
     // 보상형 광고를 끝까지 보면 fn 실행
     k.rewarded = async (name, fn) => {
+      if (Ads.isNative) k.toast(T('adLoading')); // 앱에서는 광고가 뜨기까지 몇 초 걸릴 수 있다
       const ok = await Ads.rewarded(name);
       k.adThisRun = true;
       if (ok) fn(); else k.toast(T('noad'));

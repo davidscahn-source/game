@@ -191,7 +191,7 @@ function draw(ctx) {
       const top = j === t.length - 1;
       if (top && sel === i) by = p.y - 26;
       if (top && pop && pop.i === i) r = BR * (1 + 0.25 * Math.sin(pop.t * 3.14));
-      if (hid[i][j]) {
+      if (hid[i][j] && !complete) {
         ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.beginPath(); ctx.arc(x, by, r, 0, 6.2832); ctx.fill();
         ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '800 18px system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('?', x, by + 6);
       } else ball(ctx, x, by, c, r);

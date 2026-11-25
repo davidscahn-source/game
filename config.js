@@ -17,7 +17,10 @@ window.GAME_CONFIG = {
     admob: {
       rewardedId: 'ca-app-pub-3940256099942544/5224354917',
       interstitialId: 'ca-app-pub-3940256099942544/1033173712',
-      testMode: true         // 출시 빌드 전에 false 로 변경
+      testMode: true,        // 출시 빌드 전에 false 로 변경
+      // AdMob 에 개인정보 메시지를 만들지 않은 상태에서도 광고를 낸다.
+      // 유럽(EEA)·영국·스위스에 배포하려면 AdMob 에서 메시지를 먼저 만들어야 합니다 (README 참고).
+      allowAdsWithoutConsentMessage: true
     }
   },
   // 앱에서 공유한 링크는 기기의 localhost가 아니라 공개 웹 게임으로 연결한다.

@@ -1,5 +1,5 @@
 // 네트워크 우선, 실패 시 캐시 (오프라인 플레이 지원)
-const CACHE = 'cosmo-arcade-v3';
+const CACHE = 'cosmo-arcade-v4';
 const FILES = ['./', 'index.html', 'privacy.html', 'config.js', 'ads.js', 'icon.svg', 'manifest.webmanifest',
   'shared/kit.js', 'shared/kit.css', 'shared/share.js',
   'orbit/index.html', 'orbit/style.css', 'orbit/game.js',

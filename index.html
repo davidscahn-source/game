@@ -111,7 +111,7 @@ footer button{background:none;border:0;color:#7df9ff;font:inherit;text-decoratio
       if (!ok) { privacyStatus.textContent = ko ? '설정을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.' : 'Unable to load settings. Please try again.'; privacyStatus.hidden = false; }
       privacyOptions.disabled = false;
     };
-    Ads.init();
+    Ads.init({ preload: false });
   }
   if (!native && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     navigator.serviceWorker.register('sw.js').catch(function () {});

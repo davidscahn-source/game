@@ -34,7 +34,8 @@ const STR = {
   more: ['🎮 다른 게임', '🎮 More games'],
   near: ['😱 최고 기록까지 단 {n}점!', '😱 Just {n} from your best!'],
   shareText: ['궤도 점프에서 {n}점! 이길 수 있어?', 'I scored {n} in Orbit Leap! Can you beat it?'],
-  shareFailed: ['공유할 수 없어요', 'Unable to share']
+  shareFailed: ['공유할 수 없어요', 'Unable to share'],
+  adLoading: ['광고 불러오는 중…', 'Loading ad…']
 };
 const T = (k, v) => {
   let s = (STR[k] || [k, k])[KO ? 0 : 1];
@@ -512,11 +513,13 @@ $('btnRetry').onclick = async () => {
   start();
 };
 $('btnRevive').onclick = async () => {
+  if (Ads.isNative) toast(T('adLoading'));
   const ok = await Ads.rewarded('revive');
   adThisRun = true;
   if (ok) revive(); else toast(T('noad'));
 };
 $('btnDouble').onclick = async () => {
+  if (Ads.isNative) toast(T('adLoading'));
   const ok = await Ads.rewarded('double');
   adThisRun = true;
   if (!ok) return toast(T('noad'));

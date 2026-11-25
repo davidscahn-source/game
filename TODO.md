@@ -21,4 +21,18 @@
 
 ## 정식 광고 수익을 켤 때
 
-별도 AdMob 앱 ID와 광고 단위 ID를 발급받아 `android/app/src/main/res/values/strings.xml` 및 `config.js`에 넣고 공개용 설정을 검증합니다. 테스트는 계속 테스트 ID 또는 등록된 테스트 기기에서 진행합니다. 동의 메시지가 필요한 국가에 배포할 경우 AdMob에서 메시지를 설정하고 동의 및 개인정보 설정 변경을 확인합니다.
+지금 들어 있는 광고 ID는 구글 공식 **테스트 ID**라서 수익이 나지 않습니다. 정식 출시 직전에 아래 순서로 바꿉니다.
+
+1. **AdMob 가입** — https://admob.google.com 에서 가입하고 결제 정보(주소·세금 정보·계좌)를 입력합니다.
+2. **앱과 광고 단위 만들기** — 앱 추가(Android) → **앱 ID** (`ca-app-pub-…~…`) 1개, 광고 단위 **보상형** 1개와 **전면** 1개 → **광고 단위 ID** (`ca-app-pub-…/…`) 2개.
+3. **ID 넣기** — 앱 ID는 `android/app/src/main/res/values/strings.xml`의 `admob_app_id`, 광고 단위 ID 2개는 `config.js`의 `admob.rewardedId`·`admob.interstitialId`에 넣고 `admob.testMode`를 `false`로 바꿉니다. ID 3개를 Claude에게 알려주면 대신 넣어 줍니다.
+4. **개인정보 메시지** — 유럽(EEA)·영국·스위스에도 배포한다면 AdMob의 **개인 정보 보호 및 메시지**에서 유럽 규정용 메시지를 먼저 만들어 게시합니다. 한국 등 그 밖의 지역에만 배포한다면 없어도 광고가 나옵니다.
+5. 본인 기기에서는 계속 테스트 ID나 등록된 테스트 기기로 확인합니다. **실제 광고를 본인이 누르면 계정이 정지될 수 있습니다.**
+
+## 처음이라면 — 자주 찾는 화면
+
+- 웹 게임 공개 설정: 저장소 [Settings → Pages](https://github.com/davidscahn-source/game/settings/pages) (Source: Deploy from a branch, 브랜치 `ccr-4673a09d-6kywne`, 폴더 `/ (root)`)
+- 서명 비밀값 4개 등록: 저장소 [Settings → Secrets and variables → Actions](https://github.com/davidscahn-source/game/settings/secrets/actions) → New repository secret
+- 앱 파일 받기: [Actions → Android build](https://github.com/davidscahn-source/game/actions/workflows/android.yml) → 맨 위 실행 → 아래 Artifacts
+- Play Console 가입(등록비 25달러, 본인 인증): https://play.google.com/console
+- 개인정보처리방침 주소: `https://davidscahn-source.github.io/game/privacy.html`

@@ -81,7 +81,7 @@
   const loading = { reward: null, inter: null };
   let waiter = null, busy = false, initPromise = null;
   let sdkInitialized = false, listenersReady = false, canRequestAds = false;
-  let privacyOptionsRequired = false, consentGeneration = 0;
+  let privacyOptionsRequired = false, consentGeneration = 0, preload = true;
 
   // 네트워크나 SDK가 응답하지 않아도 게임에 영구적으로 갇히지 않는다.
   function withTimeout(promise, ms) {
@@ -97,7 +97,22 @@
   function setConsent(info) {
     canRequestAds = !!(info && info.canRequestAds);
     privacyOptionsRequired = !!(info && info.privacyOptionsRequirementStatus === 'REQUIRED');
+    // 실제로 확인된 결과만 기억해 두었다가, 다음에 확인이 실패하면 참고한다
+    if (info && !info.fallback) { try { localStorage.setItem('cosmo.consent', canRequestAds ? '1' : '0'); } catch (e) {} }
     hooks.onPrivacyOptionsChanged(privacyOptionsRequired);
+  }
+
+  // 동의 확인 자체가 실패했을 때의 처리.
+  // 1) AdMob 에 개인정보 메시지를 만들지 않아 생기는 오류: 물어볼 메시지가 없는 상태이므로 광고를 허용한다
+  //    (config 의 allowAdsWithoutConsentMessage 를 false 로 두면 막는다).
+  // 2) 그 밖의 오류(오프라인 등): 지난번에 확인된 결과가 "허용"이었을 때만 광고를 허용한다.
+  function consentFallback(error) {
+    const ok = { canRequestAds: true, privacyOptionsRequirementStatus: 'NOT_REQUIRED', fallback: true };
+    const msg = String((error && error.message) || error || '');
+    if (/misconfigur|no form/i.test(msg)) return am.allowAdsWithoutConsentMessage === false ? null : ok;
+    let last = null;
+    try { last = localStorage.getItem('cosmo.consent'); } catch (e) {}
+    return last === '1' ? ok : null;
   }
 
   function admobLoad(kind) {
@@ -138,7 +153,9 @@
     initPromise = (async () => {
       try {
         // 동의 확인 전에는 SDK 초기화나 광고 요청을 하지 않는다.
-        let info = await withTimeout(AdMob.requestConsentInfo(), 15000);
+        let info;
+        try { info = await withTimeout(AdMob.requestConsentInfo(), 15000); } catch (e) { info = consentFallback(e); }
+        if (!info) { setConsent(null); return false; }
         if (info.isConsentFormAvailable && info.status === 'REQUIRED') info = await AdMob.showConsentForm();
         setConsent(info);
         if (!canRequestAds) return false;
@@ -147,8 +164,7 @@
           sdkInitialized = true;
         }
         registerListeners();
-        admobLoad('reward');
-        admobLoad('inter');
+        if (preload) { admobLoad('reward'); admobLoad('inter'); }
         return true;
       } catch (e) { setConsent(null); return false; }
     })();
@@ -204,7 +220,9 @@
     hooks,
     get privacyOptionsRequired() { return privacyOptionsRequired; },
     showPrivacyOptions,
-    init() {
+    // preload:false — 광고를 보여 주지 않는 화면(허브)에서는 동의 확인만 하고 광고는 미리 받지 않는다
+    init(opts) {
+      preload = !(opts && opts.preload === false);
       if (isNative) admobInit();
       else if (cfg.provider === 'adsense') loadAdsense();
     },

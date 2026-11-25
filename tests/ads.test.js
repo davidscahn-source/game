@@ -12,7 +12,7 @@ function deferred() {
   return { promise, resolve };
 }
 
-function createNativeAds({ consent = () => Promise.resolve(allowed), consentForm = () => Promise.resolve(allowed), prepare = () => Promise.resolve(), show = () => Promise.resolve(), privacy = () => Promise.resolve() } = {}) {
+function createNativeAds({ consent = () => Promise.resolve(allowed), consentForm = () => Promise.resolve(allowed), prepare = () => Promise.resolve(), show = () => Promise.resolve(), privacy = () => Promise.resolve(), admob = {}, stored = {} } = {}) {
   const listeners = new Map();
   const calls = [];
   const cap = {
@@ -28,9 +28,10 @@ function createNativeAds({ consent = () => Promise.resolve(allowed), consentForm
     },
     addListener(_plugin, event, callback) { listeners.set(event, callback); }
   };
-  const window = { Capacitor: cap, GAME_CONFIG: { ads: { admob: { rewardedId: 'reward', interstitialId: 'interstitial', testMode: true } } } };
-  vm.runInNewContext(source, { window, Promise, Date, setTimeout, clearTimeout });
-  return { ads: window.Ads, calls, emit: (event) => listeners.get(event)?.() };
+  const window = { Capacitor: cap, GAME_CONFIG: { ads: { admob: { rewardedId: 'reward', interstitialId: 'interstitial', testMode: true, ...admob } } } };
+  const localStorage = { getItem: (key) => (key in stored ? stored[key] : null), setItem: (key, value) => { stored[key] = String(value); } };
+  vm.runInNewContext(source, { window, localStorage, Promise, Date, setTimeout, clearTimeout });
+  return { ads: window.Ads, calls, stored, emit: (event) => listeners.get(event)?.() };
 }
 
 async function waitUntil(predicate) {
@@ -115,4 +116,48 @@ test('a failed ad load returns without pausing the game', async () => {
   ads.hooks.onStart = () => game.push('paused');
   assert.equal(await ads.rewarded('continue'), false);
   assert.deepEqual(game, []);
+});
+
+const noForms = () => Promise.reject(new Error("Publisher misconfiguration: Failed to read publisher's account configuration; no form(s) configured for the input app ID."));
+const offline = () => Promise.reject(new Error('Network error'));
+
+async function earnReward(native) {
+  const reward = native.ads.rewarded('continue');
+  await waitUntil(() => native.calls.includes('showRewardVideoAd'));
+  native.emit('onRewardedVideoAdReward');
+  native.emit('onRewardedVideoAdDismissed');
+  return reward;
+}
+
+test('ads still work when the AdMob account has no privacy message configured', async () => {
+  assert.equal(await earnReward(createNativeAds({ consent: noForms })), true);
+});
+
+test('a missing privacy message blocks ads when the owner opts out of that fallback', async () => {
+  const { ads, calls } = createNativeAds({ consent: noForms, admob: { allowAdsWithoutConsentMessage: false } });
+  assert.equal(await ads.rewarded('continue'), false);
+  assert.equal(calls.includes('prepareRewardVideoAd'), false);
+});
+
+test('a failed consent check on first launch requests no ads', async () => {
+  const { ads, calls } = createNativeAds({ consent: offline });
+  assert.equal(await ads.rewarded('continue'), false);
+  assert.equal(calls.includes('prepareRewardVideoAd'), false);
+});
+
+test('a failed consent check reuses the last confirmed answer', async () => {
+  const stored = {};
+  assert.equal(await earnReward(createNativeAds({ stored })), true);
+  assert.equal(stored['cosmo.consent'], '1');
+  assert.equal(await earnReward(createNativeAds({ consent: offline, stored })), true);
+  const refused = { 'cosmo.consent': '0' };
+  assert.equal(await createNativeAds({ consent: offline, stored: refused }).ads.rewarded('continue'), false);
+});
+
+test('the hub confirms consent without preloading ads it never shows', async () => {
+  const { ads, calls } = createNativeAds();
+  ads.init({ preload: false });
+  await waitUntil(() => calls.includes('initialize'));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(calls.some((c) => c.startsWith('prepare')), false);
 });
