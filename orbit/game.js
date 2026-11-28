@@ -486,8 +486,8 @@ function showOver() {
   $('overScore').textContent = score;
   $('overBest').textContent = save.best;
   $('overCoins').textContent = runCoins;
-  $('btnRevive').hidden = revived || score < 3;
-  $('btnDouble').hidden = doubled || runCoins < 1;
+  $('btnRevive').hidden = !Ads.canShowAds || revived || score < 3;
+  $('btnDouble').hidden = !Ads.canShowAds || doubled || runCoins < 1;
   show('over');
 }
 function revive() {

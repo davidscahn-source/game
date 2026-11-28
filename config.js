@@ -18,9 +18,10 @@ window.GAME_CONFIG = {
       rewardedId: 'ca-app-pub-3940256099942544/5224354917',
       interstitialId: 'ca-app-pub-3940256099942544/1033173712',
       testMode: true,        // 출시 빌드 전에 false 로 변경
-      // AdMob 에 개인정보 메시지를 만들지 않은 상태에서도 광고를 낸다.
-      // 유럽(EEA)·영국·스위스에 배포하려면 AdMob 에서 메시지를 먼저 만들어야 합니다 (README 참고).
-      allowAdsWithoutConsentMessage: true
+      // 글로벌 테스트에서는 동의 확인에 실패하면 광고를 요청하지 않는다.
+      // 유럽(EEA)·영국·스위스의 동의 메시지는 AdMob에서 별도로 설정해야 한다.
+      allowConsentFallback: false,
+      allowAdsWithoutConsentMessage: false
     }
   },
   // 앱에서 공유한 링크는 기기의 localhost가 아니라 공개 웹 게임으로 연결한다.

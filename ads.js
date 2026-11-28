@@ -77,6 +77,9 @@
     addListener: (ev, cb) => cap.addListener('AdMob', ev, cb)
   };
   const am = cfg.admob || {};
+  // 미성년자에게는 광고를 요청하지 않는다. 성인도 광고 요청에는 보호 처리를 적용하되,
+  // 필요한 지역의 동의 화면이 생략되지 않도록 UMP에는 실제 연령대를 전달한다.
+  const consentOptions = () => ({ tagForUnderAgeOfConsent: false });
   const ready = { reward: false, inter: false };
   const loading = { reward: null, inter: null };
   let waiter = null, busy = false, initPromise = null;
@@ -97,16 +100,18 @@
   function setConsent(info) {
     canRequestAds = !!(info && info.canRequestAds);
     privacyOptionsRequired = !!(info && info.privacyOptionsRequirementStatus === 'REQUIRED');
-    // 실제로 확인된 결과만 기억해 두었다가, 다음에 확인이 실패하면 참고한다
-    if (info && !info.fallback) { try { localStorage.setItem('cosmo.consent', canRequestAds ? '1' : '0'); } catch (e) {} }
+    // 이전 방식의 대체 동작을 명시적으로 켠 경우에만 확인 결과를 보관한다.
+    if (am.allowConsentFallback === true && info && !info.fallback) { try { localStorage.setItem('cosmo.consent', canRequestAds ? '1' : '0'); } catch (e) {} }
     hooks.onPrivacyOptionsChanged(privacyOptionsRequired);
   }
 
-  // 동의 확인 자체가 실패했을 때의 처리.
+  // 이전 방식의 선택적 대체 동작. 글로벌 테스트 설정에서는 비활성화되어 있다.
   // 1) AdMob 에 개인정보 메시지를 만들지 않아 생기는 오류: 물어볼 메시지가 없는 상태이므로 광고를 허용한다
   //    (config 의 allowAdsWithoutConsentMessage 를 false 로 두면 막는다).
   // 2) 그 밖의 오류(오프라인 등): 지난번에 확인된 결과가 "허용"이었을 때만 광고를 허용한다.
   function consentFallback(error) {
+    // 글로벌 테스트에서는 지역별 동의 상태를 확실히 확인하지 못하면 광고를 요청하지 않는다.
+    if (am.allowConsentFallback !== true) return null;
     const ok = { canRequestAds: true, privacyOptionsRequirementStatus: 'NOT_REQUIRED', fallback: true };
     const msg = String((error && error.message) || error || '');
     if (/misconfigur|no form/i.test(msg)) return am.allowAdsWithoutConsentMessage === false ? null : ok;
@@ -152,15 +157,21 @@
     if (initPromise) return initPromise;
     initPromise = (async () => {
       try {
+        // 연령 확인 전과 미성년자에게는 동의 SDK와 광고를 호출하지 않는다.
+        if (!window.AgeGate || await window.AgeGate.ensure() !== 'adult') return false;
         // 동의 확인 전에는 SDK 초기화나 광고 요청을 하지 않는다.
         let info;
-        try { info = await withTimeout(AdMob.requestConsentInfo(), 15000); } catch (e) { info = consentFallback(e); }
+        try { info = await withTimeout(AdMob.requestConsentInfo(consentOptions()), 15000); } catch (e) { info = consentFallback(e); }
         if (!info) { setConsent(null); return false; }
         if (info.isConsentFormAvailable && info.status === 'REQUIRED') info = await AdMob.showConsentForm();
         setConsent(info);
         if (!canRequestAds) return false;
         if (!sdkInitialized) {
-          await withTimeout(AdMob.initialize({ initializeForTesting: !!am.testMode }), 15000);
+          await withTimeout(AdMob.initialize({
+            initializeForTesting: !!am.testMode,
+            tagForUnderAgeOfConsent: true,
+            maxAdContentRating: 'General'
+          }), 15000);
           sdkInitialized = true;
         }
         registerListeners();
@@ -204,7 +215,7 @@
     try {
       await AdMob.showPrivacyOptionsForm();
       consentGeneration += 1; ready.reward = false; ready.inter = false;
-      const info = await withTimeout(AdMob.requestConsentInfo(), 15000);
+      const info = await withTimeout(AdMob.requestConsentInfo(consentOptions()), 15000);
       setConsent(info);
       initPromise = null;
       return true;
@@ -217,6 +228,7 @@
 
   window.Ads = {
     isNative,
+    get canShowAds() { return !isNative || !!(window.AgeGate && window.AgeGate.group === 'adult'); },
     hooks,
     get privacyOptionsRequired() { return privacyOptionsRequired; },
     showPrivacyOptions,

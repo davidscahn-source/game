@@ -1,7 +1,7 @@
 // 네트워크 우선, 실패 시 캐시 (오프라인 플레이 지원)
-const CACHE = 'cosmo-arcade-v4';
+const CACHE = 'cosmo-arcade-v5';
 const FILES = ['./', 'index.html', 'privacy.html', 'config.js', 'ads.js', 'icon.svg', 'manifest.webmanifest',
-  'shared/kit.js', 'shared/kit.css', 'shared/share.js',
+  'shared/kit.js', 'shared/kit.css', 'shared/share.js', 'shared/age-gate.js',
   'orbit/index.html', 'orbit/style.css', 'orbit/game.js',
   'blocks/index.html', 'blocks/game.js', 'merge/index.html', 'merge/game.js', 'sort/index.html', 'sort/game.js', 'rush/index.html', 'rush/game.js'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES))); self.skipWaiting(); });
