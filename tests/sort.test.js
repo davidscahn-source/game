@@ -19,7 +19,8 @@ test('restart restores the original level after the player adds a rewarded tube'
   const window = {};
   vm.runInNewContext(fs.readFileSync('sort/game.js', 'utf8'), {
     window, Math: math, setTimeout,
-    Kit: { create: (config) => { options = config; return game; }, KO: true }
+    Kit: { create: (config) => { options = config; return game; }, KO: true },
+    Ads: { canShowAds: true }
   });
   options.start();
   window.__dbg().tap(0);

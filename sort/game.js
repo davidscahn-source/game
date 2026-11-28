@@ -91,17 +91,22 @@ function newLevel() {
   k.hud(lvText(), mystery ? (Kit.KO ? '❓ 미스터리 레벨' : '❓ Mystery level') : '');
   k.toolbar([
     { id: 'undo', label: '', fn: undo },
-    { id: 'tube', label: ['▶ 병 추가', '▶ Add tube'], ad: true, fn: addTube },
+    ...(Ads.canShowAds ? [{ id: 'tube', label: ['▶ 병 추가', '▶ Add tube'], ad: true, fn: addTube }] : []),
     { id: 'reset', label: ['⟲ 다시', '⟲ Restart'], fn: restart }
   ]);
   tools();
 }
 function tools() {
   if (!k.tools) return;
-  k.tools.undo.textContent = undos > 0 ? (Kit.KO ? '↩ 되돌리기 ' : '↩ Undo ') + undos : (Kit.KO ? '▶ 되돌리기 +5' : '▶ Undo +5');
-  k.tools.undo.className = undos > 0 ? '' : 'ad';
-  k.tools.tube.disabled = extraUsed;
-  k.tools.tube.style.opacity = extraUsed ? 0.35 : 1;
+  k.tools.undo.textContent = undos > 0 || !Ads.canShowAds
+    ? (Kit.KO ? '↩ 되돌리기 ' : '↩ Undo ') + undos
+    : (Kit.KO ? '▶ 되돌리기 +5' : '▶ Undo +5');
+  k.tools.undo.disabled = undos <= 0 && !Ads.canShowAds;
+  k.tools.undo.className = undos > 0 || !Ads.canShowAds ? '' : 'ad';
+  if (k.tools.tube) {
+    k.tools.tube.disabled = extraUsed;
+    k.tools.tube.style.opacity = extraUsed ? 0.35 : 1;
+  }
 }
 function layout() {
   if (!tubes) return;

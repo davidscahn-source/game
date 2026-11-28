@@ -221,7 +221,7 @@ window.Kit = (() => {
         tag: tierText(Math.max(score, save.best)),
         buttons: [
           // 오늘의 도전은 공정한 비교를 위해 이어하기 없음
-          revive && !daily && !k.revived && { label: T('revive'), kind: 'ad', fn: () => k.rewarded('revive', () => { k.revived = true; k.closePanel(); k.state = 'play'; revive(); }) },
+          Ads.canShowAds && revive && !daily && !k.revived && { label: T('revive'), kind: 'ad', fn: () => k.rewarded('revive', () => { k.revived = true; k.closePanel(); k.state = 'play'; revive(); }) },
           { label: T('retry'), kind: 'primary', fn: async () => { await k.interstitial(); begin(); } },
           [{ label: '⚔️ ' + T('challenge'), fn: () => share(score) }, { label: T('home'), href: '../index.html' }]
         ],
